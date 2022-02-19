@@ -1,0 +1,13 @@
+{
+  "name": "leven-framework/dba-mysql",
+  "type": "library",
+  "require": {
+    "leven-framework/dba-common": "@dev",
+    "ext-pdo": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Leven\\DBA\\MySQL\\": "src/"
+    }
+  }
+}
