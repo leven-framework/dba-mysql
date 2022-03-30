@@ -2,8 +2,8 @@
   "name": "leven-framework/dba-mysql",
   "type": "library",
   "require": {
-    "leven-framework/dba-common": "@dev",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "leven-framework/dba-common": "@dev"
   },
   "autoload": {
     "psr-4": {
