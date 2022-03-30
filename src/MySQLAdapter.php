@@ -55,7 +55,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws DriverException
      */
     public function schema(string $table): array
     {
@@ -78,7 +78,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Driver\DriverException
+     * @throws DriverException
      */
     public function count(string $table): int
     {
@@ -87,9 +87,9 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\ArgumentValidationException
+     * @throws ArgumentValidationException
      * @throws DriverException
-     * @throws \Leven\DBA\Common\Exception\EmptyResultException
+     * @throws EmptyResultException
      */
     public function get(string $table, array|string $columns = '*', array $conditions = [], array $options = []): DatabaseAdapterResponse
     {
@@ -136,7 +136,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
 
     /**
      * @throws ArgumentValidationException
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws DriverException
      */
     public function insert(string $table, array $data): DatabaseAdapterResponse
     {
@@ -172,8 +172,8 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\ArgumentValidationException
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws ArgumentValidationException
+     * @throws DriverException
      */
     public function update(string $table, array $data, array $conditions = [], array $options = []): DatabaseAdapterResponse
     {
@@ -206,8 +206,8 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\ArgumentValidationException
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws ArgumentValidationException
+     * @throws DriverException
      */
     public function delete(string $table, array $conditions = [], array $options = []): DatabaseAdapterResponse
     {
@@ -238,7 +238,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws DriverException
      */
     public function txnBegin(): MySQLAdapter
     {
@@ -258,8 +258,8 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\Driver\TxnNotActiveException
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws TxnNotActiveException
+     * @throws DriverException
      */
     public function txnCommit(): MySQLAdapter
     {
@@ -276,8 +276,8 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\Driver\TxnNotActiveException
-     * @throws \Leven\DBA\Common\Exception\Driver\DriverException
+     * @throws TxnNotActiveException
+     * @throws DriverException
      */
     public function txnRollback(): MySQLAdapter
     {
@@ -296,7 +296,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     // INTERNAL METHODS
 
     /**
-     * @throws \Leven\DBA\Common\Exception\ArgumentValidationException
+     * @throws ArgumentValidationException
      */
     private function parseColumns(array|string $columns): string
     {
@@ -315,7 +315,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\ArgumentValidationException
+     * @throws ArgumentValidationException
      */
     private function parseConditions(array $conditions): array
     {
@@ -338,7 +338,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\ArgumentValidationException
+     * @throws ArgumentValidationException
      */
     private function parseOptions(array $options): string
     {
@@ -370,7 +370,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\Exception\ArgumentValidationException
+     * @throws ArgumentValidationException
      */
     private function parseData(array $data): array
     {
@@ -392,7 +392,7 @@ final class MySQLAdapter implements DatabaseAdapterInterface
     }
 
     /**
-     * @throws \Leven\DBA\Common\ArgumentValidationException
+     * @throws ArgumentValidationException
      */
     private function generateParam($column, $value, $index): array
     {
