@@ -1,13 +1,14 @@
 <?php namespace Leven\DBA\MySQL;
 // by Leon, MIT License
 
+use Leven\DBA\Common\DatabaseAdapterResponse;
 use Leven\DBA\Common\Exception\{Driver\DriverException, Driver\TxnNotActiveException};
 use Leven\DBA\MySQL\Query\{
     DeleteQueryBuilder,
     DescribeQueryBuilder,
     InsertQueryBuilder,
     SelectQueryBuilder,
-    UpdateQueryBuilder
+    UpdateQueryBuilder,
 };
 use PDO, PDOException;
 
@@ -67,7 +68,6 @@ class MySQLAdapter
         }
 
         return new DatabaseAdapterResponse(
-            $query,
             $stat->rowCount(),
             $stat->fetchAll(),
             $this->driver->lastInsertId()

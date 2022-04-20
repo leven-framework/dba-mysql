@@ -1,9 +1,6 @@
 <?php
 
-namespace Leven\DBA\MySQL\Query\Part;
-
-use Leven\DBA\MySQL\Query;
-use Leven\DBA\MySQL\Query\WhereBuilder;
+namespace Leven\DBA\Common\Part;
 
 trait WhereTrait
 {
@@ -40,8 +37,6 @@ trait WhereTrait
     }
 
 
-    // INTERNAL
-
     protected function whereGeneric(
         bool $isOr,
         string|callable $columnOrGroup,
@@ -51,7 +46,7 @@ trait WhereTrait
     ): static
     {
         if(is_callable($columnOrGroup)){
-            $conditionBuilder = new WhereBuilder($isOr);
+            $conditionBuilder = new WhereGroup($isOr);
             $columnOrGroup($conditionBuilder);
             $this->conditions[] = $conditionBuilder;
         }else{
@@ -60,35 +55,6 @@ trait WhereTrait
                 new WhereCondition($isOr, $columnOrGroup, $value, $valueOrOperand);
         }
         return $this;
-    }
-
-
-    protected static function genQueryCondsRecursive(array $conditions): Query
-    {
-        $query = new Query;
-        if(empty($conditions)) return $query;
-
-        foreach ($conditions as $index => $condition) {
-            if($index !== 0) $query->append($condition->isOr ? ' OR ' : ' AND ');
-
-            if($condition instanceof WhereBuilder) {
-                $query->merge(static::genQueryCondsRecursive($condition->getConditions()));
-            } else
-            if($condition instanceof WhereCondition) {
-                $query->append(static::escapeName($condition->column) . ' ' . $condition->operand . ' ?');
-                $query->addParams($condition->value);
-            }
-        }
-
-        return $query->wrap('(', ')');
-    }
-
-    protected function genQueryConds(): Query
-    {
-        $conds = static::genQueryCondsRecursive($this->conditions);
-        if($conds->empty()) return new Query;
-        $conds->prepend(' WHERE ');
-        return $conds;
     }
 
 }

@@ -3,21 +3,20 @@
 namespace Leven\DBA\MySQL\Query;
 
 use Leven\DBA\MySQL\Query;
-use Leven\DBA\MySQL\Query\Part\{LimitTrait, OrderTrait, WhereTrait};
 
 class DeleteQueryBuilder extends BaseQueryBuilder
 {
 
-    use WhereTrait;
-    use OrderTrait;
-    use LimitTrait;
+    use Query\Generator\WhereGeneratorTrait;
+    use Query\Generator\OrderGeneratorTrait;
+    use Query\Generator\LimitGeneratorTrait;
 
     public function getQuery(): Query
     {
         return (new Query('DELETE FROM '))
             ->merge(
                 $this->genQueryTable(),
-                $this->genQueryConds(),
+                $this->genQueryWhere(),
                 $this->genQueryOrder(),
                 $this->genQueryLimit(),
             );

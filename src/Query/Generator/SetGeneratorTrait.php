@@ -1,28 +1,14 @@
 <?php
 
-namespace Leven\DBA\MySQL\Query\Part;
+namespace Leven\DBA\MySQL\Query\Generator;
 
+use Leven\DBA\Common\Part\SetTrait;
 use Leven\DBA\MySQL\Query;
 
-trait SetTrait
+trait SetGeneratorTrait
 {
 
-    protected array $data = [];
-
-    public function set(array|string $dataOrColumn, null|string|bool|int|float $value = null): static
-    {
-        if(is_array($dataOrColumn)) {
-            $this->data = [...$this->data, ...$dataOrColumn];
-            return $this;
-        }
-
-        $this->data[$dataOrColumn] = $value;
-
-        return $this;
-    }
-
-
-    // INTERNAL
+    use SetTrait;
 
     protected function genQuerySet(): Query
     {
@@ -37,8 +23,6 @@ trait SetTrait
         }
 
         return $query;
-
-
     }
 
 }

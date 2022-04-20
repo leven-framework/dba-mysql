@@ -1,28 +1,13 @@
 <?php
 
-namespace Leven\DBA\MySQL\Query\Part;
+namespace Leven\DBA\MySQL\Query\Generator;
 
+use Leven\DBA\Common\Part\OrderTrait;
 use Leven\DBA\MySQL\Query;
 
-trait OrderTrait
+trait OrderGeneratorTrait
 {
-
-    protected array $order = [];
-
-    public function orderAsc(string $column): static
-    {
-        $this->order[$column] = 'ASC';
-        return $this;
-    }
-
-    public function orderDesc(string $column): static
-    {
-        $this->order[$column] = 'DESC';
-        return $this;
-    }
-
-
-    // INTERNAL
+    use OrderTrait;
 
     protected function genQueryOrder(): Query
     {

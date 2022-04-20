@@ -3,7 +3,7 @@
 namespace Leven\DBA\MySQL\Query;
 
 use Leven\DBA\Common\Exception\Driver\DriverException;
-use Leven\DBA\MySQL\DatabaseAdapterResponse;
+use Leven\DBA\Common\DatabaseAdapterResponse;
 use Leven\DBA\MySQL\MySQLAdapter;
 use Leven\DBA\MySQL\Query;
 

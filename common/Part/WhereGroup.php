@@ -1,10 +1,8 @@
 <?php
 
-namespace Leven\DBA\MySQL\Query;
+namespace Leven\DBA\Common\Part;
 
-use Leven\DBA\MySQL\Query\Part\WhereTrait;
-
-class WhereBuilder
+class WhereGroup
 {
     use WhereTrait;
 

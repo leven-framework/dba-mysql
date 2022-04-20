@@ -1,6 +1,6 @@
 <?php
 
-namespace Leven\DBA\MySQL\Query\Part;
+namespace Leven\DBA\Common\Part;
 
 class WhereCondition
 {
