@@ -3,7 +3,7 @@
 namespace Leven\DBA\MySQL\Query;
 
 use Leven\DBA\Common\Exception\Driver\DriverException;
-use Leven\DBA\Common\DatabaseAdapterResponse;
+use Leven\DBA\Common\AdapterResponse;
 use Leven\DBA\MySQL\MySQLAdapter;
 use Leven\DBA\MySQL\Query;
 
@@ -22,7 +22,7 @@ abstract class BaseQueryBuilder
     /**
      * @throws DriverException
      */
-    final public function execute(): DatabaseAdapterResponse
+    final public function execute(): AdapterResponse
     {
         if($this->adapter === null)
             throw new \Exception('pass the built query to the adapter executeQuery() method');

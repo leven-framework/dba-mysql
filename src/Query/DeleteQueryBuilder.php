@@ -2,14 +2,16 @@
 
 namespace Leven\DBA\MySQL\Query;
 
+use Leven\DBA\Common\DeleteQueryInterface;
 use Leven\DBA\MySQL\Query;
+use Leven\DBA\MySQL\Query\Generator\{LimitGeneratorTrait, OrderGeneratorTrait, WhereGeneratorTrait};
 
-class DeleteQueryBuilder extends BaseQueryBuilder
+class DeleteQueryBuilder extends BaseQueryBuilder implements DeleteQueryInterface
 {
 
-    use Query\Generator\WhereGeneratorTrait;
-    use Query\Generator\OrderGeneratorTrait;
-    use Query\Generator\LimitGeneratorTrait;
+    use WhereGeneratorTrait;
+    use OrderGeneratorTrait;
+    use LimitGeneratorTrait;
 
     public function getQuery(): Query
     {

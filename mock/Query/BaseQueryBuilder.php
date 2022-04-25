@@ -2,61 +2,45 @@
 
 namespace Leven\DBA\Mock\Query;
 
-use Leven\DBA\Common\DatabaseAdapterResponse;
-use Leven\DBA\Mock\MockDatabase;
+use Leven\DBA\Common\AdapterResponse;
+use Leven\DBA\Mock\MockAdapter;
 use Leven\DBA\Mock\Query;
+use Leven\DBA\Mock\Structure\Table;
 
 abstract class BaseQueryBuilder
 {
 
-    protected array $workset;
-
     public function __construct(
-        public MockDatabase $database,
-        public string $table,
+        public MockAdapter $database,
+        public string      $table,
     )
     {
     }
 
     abstract public function getQuery(): Query;
 
-    final public function execute(): DatabaseAdapterResponse
+    final public function execute(): AdapterResponse
     {
         return $this->database->executeQuery($this->getQuery());
     }
 
 
-    final protected function prepareWorkset(): static
+    final protected function getTableCopy(): Table
     {
-        $this->workset = $this->database->getStore();
-        return $this;
+        return $this->database->getStore()->getTableCopy($this->table);
     }
 
-    final protected function clearWorkset(): static
+    final protected function pipe(mixed $initialValue, callable ...$callables): mixed
     {
-        $this->workset = [];
-        return $this;
+        return array_reduce($callables, fn($carry, $item) => $item($carry), $initialValue);
     }
 
-    final protected function filterTable(): static
+    final protected function getRowIndices(Table $table): array
     {
-        $this->workset = $this->workset[$this->table];
-        return $this;
-    }
+        foreach($table->getRows() as $index => $row)
+            $output[] = $index;
 
-    final protected function worksetGetRowIndices(): array
-    {
-        foreach($this->workset as $index => $row)
-            if($index !== 0) $output[] = $index;
-        return $output??[];
-    }
-
-    final protected function filterDeleteRowIndicesFromTable(string $table, int ...$indices): static
-    {
-        foreach($indices as $index)
-            unset($this->workset[$table][$index]);
-
-        return $this;
+        return $output ?? [];
     }
 
 }

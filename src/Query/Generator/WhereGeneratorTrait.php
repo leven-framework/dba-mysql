@@ -2,9 +2,7 @@
 
 namespace Leven\DBA\MySQL\Query\Generator;
 
-use Leven\DBA\Common\Part\WhereGroup;
-use Leven\DBA\Common\Part\WhereCondition;
-use Leven\DBA\Common\Part\WhereTrait;
+use Leven\DBA\Common\BuilderPart\{WhereGroup, WhereCondition, WhereTrait};
 use Leven\DBA\MySQL\Query;
 
 trait WhereGeneratorTrait

@@ -2,7 +2,7 @@
 
 namespace Leven\DBA\MySQL\Query\Generator;
 
-use Leven\DBA\Common\Part\ColumnTrait;
+use Leven\DBA\Common\BuilderPart\ColumnTrait;
 use Leven\DBA\MySQL\Query;
 
 trait ColumnGeneratorTrait

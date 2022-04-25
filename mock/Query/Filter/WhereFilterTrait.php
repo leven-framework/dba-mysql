@@ -2,9 +2,8 @@
 
 namespace Leven\DBA\Mock\Query\Filter;
 
-use Leven\DBA\Common\Part\WhereCondition;
-use Leven\DBA\Common\Part\WhereGroup;
-use Leven\DBA\Common\Part\WhereTrait;
+use Leven\DBA\Common\BuilderPart\{WhereCondition, WhereGroup, WhereTrait};
+use Leven\DBA\Mock\Structure\Table;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 trait WhereFilterTrait
@@ -14,8 +13,8 @@ trait WhereFilterTrait
 
     protected static function genWhereExpression(array $conditions): string
     {
-        if(empty($conditions)) return '';
-        $exp = '(';
+        $exp = '';
+        if(empty($conditions)) return $exp;
 
         foreach ($conditions as $index => $condition) {
             if($index !== 0) $exp .= $condition->isOr ? ' || ' : ' && ';
@@ -38,24 +37,21 @@ trait WhereFilterTrait
             $exp .= "$condition->column $operand $value";
         }
 
-        return "$exp)";
+        return "($exp)";
     }
 
-    protected function filterWhere(): static
+    protected function filterWhere(Table $table): Table
     {
         $exp = static::genWhereExpression($this->conditions);
-        if($exp === '') return $this;
+        if($exp === '') return $table;
 
         $el = new ExpressionLanguage;
-        $columns = array_keys($this->workset[0]);
-        foreach($this->workset as $index => $row){
-            if($index === 0) continue; // column names
-
-            $result = $el->evaluate($exp, array_combine($columns, $row));
-            if($result === false) unset($this->workset[$index]);
+        foreach($table->getRows() as $index => $row){
+            $result = $el->evaluate($exp, array_combine($table->getColumnNames(), $row));
+            if($result === false) $table->deleteRow($index);
         }
 
-        return $this;
+        return $table;
     }
 
 }

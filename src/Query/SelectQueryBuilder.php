@@ -2,19 +2,22 @@
 
 namespace Leven\DBA\MySQL\Query;
 
-use Leven\DBA\Common\Part\{ColumnTrait};
-use Leven\DBA\Common\Part\LimitTrait;
-use Leven\DBA\Common\Part\OrderTrait;
-use Leven\DBA\Common\Part\WhereTrait;
+use Leven\DBA\Common\SelectQueryInterface;
 use Leven\DBA\MySQL\Query;
+use Leven\DBA\MySQL\Query\Generator\{
+    ColumnGeneratorTrait,
+    LimitGeneratorTrait,
+    OrderGeneratorTrait,
+    WhereGeneratorTrait
+};
 
-class SelectQueryBuilder extends BaseQueryBuilder
+class SelectQueryBuilder extends BaseQueryBuilder implements SelectQueryInterface
 {
 
-    use Query\Generator\ColumnGeneratorTrait;
-    use Query\Generator\WhereGeneratorTrait;
-    use Query\Generator\OrderGeneratorTrait;
-    use Query\Generator\LimitGeneratorTrait;
+    use ColumnGeneratorTrait;
+    use WhereGeneratorTrait;
+    use OrderGeneratorTrait;
+    use LimitGeneratorTrait;
 
     public function getQuery(): Query
     {

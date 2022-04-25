@@ -2,13 +2,14 @@
 
 namespace Leven\DBA\MySQL\Query;
 
-use Leven\DBA\Common\Part\{SetTrait};
+use Leven\DBA\Common\InsertQueryInterface;
 use Leven\DBA\MySQL\Query;
+use Leven\DBA\MySQL\Query\Generator\SetGeneratorTrait;
 
-class InsertQueryBuilder extends BaseQueryBuilder
+class InsertQueryBuilder extends BaseQueryBuilder implements InsertQueryInterface
 {
 
-    use Query\Generator\SetGeneratorTrait;
+    use SetGeneratorTrait;
 
     public function getQuery(): Query
     {

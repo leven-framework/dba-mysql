@@ -1,9 +1,8 @@
 <?php namespace Leven\DBA\Common;
 
 use ArrayIterator, ArrayObject, IteratorAggregate;
-use Leven\DBA\MySQL\Query;
 
-class DatabaseAdapterResponse implements IteratorAggregate {
+class AdapterResponse implements IteratorAggregate {
 
     public function __construct(
         public readonly int $count,

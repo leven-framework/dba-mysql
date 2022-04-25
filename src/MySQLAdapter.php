@@ -1,18 +1,21 @@
 <?php namespace Leven\DBA\MySQL;
 // by Leon, MIT License
 
-use Leven\DBA\Common\DatabaseAdapterResponse;
+use Leven\DBA\Common\AdapterInterface;
+use Leven\DBA\Common\AdapterResponse;
 use Leven\DBA\Common\Exception\{Driver\DriverException, Driver\TxnNotActiveException};
+
 use Leven\DBA\MySQL\Query\{
     DeleteQueryBuilder,
     DescribeQueryBuilder,
     InsertQueryBuilder,
     SelectQueryBuilder,
-    UpdateQueryBuilder,
+    UpdateQueryBuilder
 };
+
 use PDO, PDOException;
 
-class MySQLAdapter
+class MySQLAdapter implements AdapterInterface
 {
 
     protected PDO $driver;
@@ -57,7 +60,7 @@ class MySQLAdapter
     /**
      * @throws DriverException
      */
-    public function executeQuery(Query $query): DatabaseAdapterResponse
+    public function executeQuery(Query $query): AdapterResponse
     {
         try {
             $stat = $this->driver->prepare($query->getQuery());
@@ -67,7 +70,7 @@ class MySQLAdapter
             throw new DriverException(message: 'query failed', previous: $e);
         }
 
-        return new DatabaseAdapterResponse(
+        return new AdapterResponse(
             $stat->rowCount(),
             $stat->fetchAll(),
             $this->driver->lastInsertId()
@@ -90,7 +93,7 @@ class MySQLAdapter
     /**
      * @throws DriverException
      */
-    public function insert(string $table, ?array $data = null): InsertQueryBuilder|DatabaseAdapterResponse
+    public function insert(string $table, ?array $data = null): InsertQueryBuilder|AdapterResponse
     {
         $builder = new InsertQueryBuilder($this->prefix . $table, $this);
 
@@ -116,7 +119,7 @@ class MySQLAdapter
     /**
      * @throws DriverException
      */
-    public function txnBegin(): MySQLAdapter
+    public function txnBegin(): static
     {
         if ($this->txnDepth++ > 0) return $this;
 
@@ -130,7 +133,7 @@ class MySQLAdapter
      * @throws TxnNotActiveException
      * @throws DriverException
      */
-    public function txnCommit(): MySQLAdapter
+    public function txnCommit(): static
     {
         if (!$this->txnDepth) throw new TxnNotActiveException;
 
@@ -144,7 +147,7 @@ class MySQLAdapter
      * @throws TxnNotActiveException
      * @throws DriverException
      */
-    public function txnRollback(): MySQLAdapter
+    public function txnRollback(): static
     {
         if (!$this->txnDepth) throw new TxnNotActiveException;
 

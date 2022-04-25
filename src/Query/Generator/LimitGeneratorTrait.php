@@ -2,7 +2,7 @@
 
 namespace Leven\DBA\MySQL\Query\Generator;
 
-use Leven\DBA\Common\Part\LimitTrait;
+use Leven\DBA\Common\BuilderPart\LimitTrait;
 use Leven\DBA\MySQL\Query;
 
 trait LimitGeneratorTrait

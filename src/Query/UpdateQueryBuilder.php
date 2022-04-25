@@ -2,19 +2,17 @@
 
 namespace Leven\DBA\MySQL\Query;
 
-use Leven\DBA\Common\Part\{SetTrait};
-use Leven\DBA\Common\Part\LimitTrait;
-use Leven\DBA\Common\Part\OrderTrait;
-use Leven\DBA\Common\Part\WhereTrait;
+use Leven\DBA\Common\UpdateQueryInterface;
 use Leven\DBA\MySQL\Query;
+use Leven\DBA\MySQL\Query\Generator\{LimitGeneratorTrait, OrderGeneratorTrait, SetGeneratorTrait, WhereGeneratorTrait};
 
-class UpdateQueryBuilder extends BaseQueryBuilder
+class UpdateQueryBuilder extends BaseQueryBuilder implements UpdateQueryInterface
 {
 
-    use Query\Generator\SetGeneratorTrait;
-    use Query\Generator\WhereGeneratorTrait;
-    use Query\Generator\OrderGeneratorTrait;
-    use Query\Generator\LimitGeneratorTrait;
+    use SetGeneratorTrait;
+    use WhereGeneratorTrait;
+    use OrderGeneratorTrait;
+    use LimitGeneratorTrait;
 
     public function getQuery(): Query
     {

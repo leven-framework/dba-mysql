@@ -2,32 +2,26 @@
 
 namespace Leven\DBA\Mock\Query\Filter;
 
-use Leven\DBA\Common\Part\ColumnTrait;
+use Leven\DBA\Common\BuilderPart\ColumnTrait;
+use Leven\DBA\Mock\Structure\Table;
 
 trait ColumnFilterTrait
 {
 
     use ColumnTrait;
 
-    protected function filterColumn(): static
+    protected function filterColumn(Table $table): Table
     {
-        if(is_string($this->columns) || empty($this->columns)) return $this;
+        if(is_string($this->columns) || empty($this->columns)) return $table;
 
         // iterate through all column names
-        foreach(array_keys($this->workset[0]) as $index => $column){
-            if(in_array($column, $this->columns))
-                continue; // column is in keep list
+        foreach($table->getColumnNames() as $index => $column){
+            if(in_array($column, $this->columns)) continue; // column is in keep list
 
-            // get rid of column definition
-            unset($this->workset[0][$column]);
-
-            // get rid of this column value in every row
-            foreach($this->workset as $rowIndex => $row)
-                if($rowIndex !== 0) // column definitions
-                    unset($this->workset[$rowIndex][$index]);
+            $table->deleteColumn($column);
         }
 
-        return $this;
+        return $table;
     }
 
 }

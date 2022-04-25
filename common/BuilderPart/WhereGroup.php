@@ -1,6 +1,6 @@
 <?php
 
-namespace Leven\DBA\Common\Part;
+namespace Leven\DBA\Common\BuilderPart;
 
 class WhereGroup
 {

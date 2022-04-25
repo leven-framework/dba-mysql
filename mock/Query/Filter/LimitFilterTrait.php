@@ -2,28 +2,27 @@
 
 namespace Leven\DBA\Mock\Query\Filter;
 
-use Leven\DBA\Common\Part\LimitTrait;
+use Leven\DBA\Common\BuilderPart\LimitTrait;
+use Leven\DBA\Mock\Structure\Table;
 
 trait LimitFilterTrait
 {
 
     use LimitTrait;
 
-    protected function filterLimit(): static
+    protected function filterLimit(Table $table): Table
     {
-        if($this->limit === 0) return $this;
+        if($this->limit === 0) return $table;
 
         $count = 0;
-        foreach($this->workset as $index => $value) {
-            if($index === 0) continue; // column names
-
+        foreach($table->getRows() as $index => $value) {
             if($count < $this->offset || $count >= $this->limit + $this->offset)
-                unset($this->workset[$index]);
+                $table->deleteRow($index);
 
             $count++;
         }
 
-        return $this;
+        return $table;
     }
 
 }

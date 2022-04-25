@@ -2,7 +2,7 @@
 
 namespace Leven\DBA\MySQL\Query\Generator;
 
-use Leven\DBA\Common\Part\OrderTrait;
+use Leven\DBA\Common\BuilderPart\OrderTrait;
 use Leven\DBA\MySQL\Query;
 
 trait OrderGeneratorTrait

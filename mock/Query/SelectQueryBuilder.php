@@ -2,13 +2,15 @@
 
 namespace Leven\DBA\Mock\Query;
 
-use Leven\DBA\Mock\Query;
 use Leven\DBA\Mock\Query\Filter\ColumnFilterTrait;
 use Leven\DBA\Mock\Query\Filter\LimitFilterTrait;
 use Leven\DBA\Mock\Query\Filter\OrderFilterTrait;
 use Leven\DBA\Mock\Query\Filter\WhereFilterTrait;
+use Leven\DBA\Common\SelectQueryInterface;
+use Leven\DBA\Mock\Query;
+use Leven\DBA\Mock\Structure\Table;
 
-class SelectQueryBuilder extends BaseQueryBuilder
+class SelectQueryBuilder extends BaseQueryBuilder implements SelectQueryInterface
 {
 
     use WhereFilterTrait;
@@ -16,28 +18,26 @@ class SelectQueryBuilder extends BaseQueryBuilder
     use OrderFilterTrait;
     use ColumnFilterTrait;
 
-    final protected function formatAssocColumns(): static
+    final protected function formatAssocColumns(Table $table): array
     {
-        $output = [];
-        $columns = array_keys($this->workset[0]);
-        foreach($this->workset as $index => $row)
-            if($index !== 0) $output[] = array_combine($columns, $row);
-        $this->workset = $output;
-        return $this;
+        foreach($table->getRows() as $index => $row)
+            $output[] = array_combine($table->getColumnNames(), $row);
+
+        return $output ?? [];
     }
 
     public function getQuery(): Query
     {
-        $this->prepareWorkset()
-            ->filterTable()
-            ->filterWhere()
-            ->filterOrder()
-            ->filterLimit()
-            ->filterColumn()
-            ->formatAssocColumns()
-        ;
+        $output = $this->pipe(
+            $this->getTableCopy(),
+            $this->filterWhere(...),
+            $this->filterOrder(...),
+            $this->filterLimit(...),
+            $this->filterColumn(...),
+            $this->formatAssocColumns(...),
+        );
 
-        return new Query($this->workset, count($this->workset));
+        return new Query(count($output), $output);
     }
 
 }
