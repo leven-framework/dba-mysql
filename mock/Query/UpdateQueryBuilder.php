@@ -3,12 +3,9 @@
 namespace Leven\DBA\Mock\Query;
 
 use Leven\DBA\Common\UpdateQueryInterface;
+use Leven\DBA\Mock\MockAdapter;
 use Leven\DBA\Mock\Query;
-use Leven\DBA\Mock\Query\Filter\LimitFilterTrait;
-use Leven\DBA\Mock\Query\Filter\OrderFilterTrait;
-use Leven\DBA\Mock\Query\Filter\SetFilterTrait;
-use Leven\DBA\Mock\Query\Filter\WhereFilterTrait;
-use Leven\DBA\Mock\Structure\Database;
+use Leven\DBA\Mock\Query\Filter\{LimitFilterTrait, OrderFilterTrait, SetFilterTrait, WhereFilterTrait};
 
 class UpdateQueryBuilder extends BaseQueryBuilder implements UpdateQueryInterface
 {
@@ -28,13 +25,13 @@ class UpdateQueryBuilder extends BaseQueryBuilder implements UpdateQueryInterfac
             $this->getRowIndices(...),
         );
 
-        $update = function(Database $store) use ($indices) {
-            $table = $store->getTableCopy($this->table);
+        $update = function(MockAdapter $adapter) use ($indices) {
+            $table = $adapter->getDatabase()->getTable($this->table);
 
             $row = $this->transformDataToRow($table, true);
             foreach($indices as $index) $table->mergeRow($index, $row);
 
-            $store->replaceTable($table);
+            $adapter->save();
         };
 
         return new Query(count($indices), [], $update);

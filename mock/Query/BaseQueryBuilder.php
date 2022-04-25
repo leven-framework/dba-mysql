@@ -27,7 +27,7 @@ abstract class BaseQueryBuilder
 
     final protected function getTableCopy(): Table
     {
-        return $this->database->getStore()->getTableCopy($this->table);
+        return clone $this->database->getDatabase()->getTable($this->table);
     }
 
     final protected function pipe(mixed $initialValue, callable ...$callables): mixed

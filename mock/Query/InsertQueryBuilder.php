@@ -2,11 +2,10 @@
 
 namespace Leven\DBA\Mock\Query;
 
-use Leven\DBA\Common;
 use Leven\DBA\Common\InsertQueryInterface;
+use Leven\DBA\Mock\MockAdapter;
 use Leven\DBA\Mock\Query;
 use Leven\DBA\Mock\Query\Filter\SetFilterTrait;
-use Leven\DBA\Mock\Structure\Database;
 
 class InsertQueryBuilder extends BaseQueryBuilder implements InsertQueryInterface
 {
@@ -15,10 +14,10 @@ class InsertQueryBuilder extends BaseQueryBuilder implements InsertQueryInterfac
 
     public function getQuery(): Query
     {
-        $update = function(Database $store) {
-            $table = $store->getTableCopy($this->table);
+        $update = function(MockAdapter $adapter) {
+            $table = $adapter->getDatabase()->getTable($this->table);
             $table->addRow($this->transformDataToRow($table));
-            $store->replaceTable($table);
+            $adapter->save();
         };
 
         return new Query(1, [], $update);

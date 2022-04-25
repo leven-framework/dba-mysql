@@ -2,13 +2,10 @@
 
 namespace Leven\DBA\Mock\Query;
 
-use Leven\DBA\Common;
 use Leven\DBA\Common\DeleteQueryInterface;
+use Leven\DBA\Mock\MockAdapter;
 use Leven\DBA\Mock\Query;
-use Leven\DBA\Mock\Query\Filter\LimitFilterTrait;
-use Leven\DBA\Mock\Query\Filter\OrderFilterTrait;
-use Leven\DBA\Mock\Query\Filter\WhereFilterTrait;
-use Leven\DBA\Mock\Structure\Database;
+use Leven\DBA\Mock\Query\Filter\{LimitFilterTrait, OrderFilterTrait, WhereFilterTrait};
 
 class DeleteQueryBuilder extends BaseQueryBuilder implements DeleteQueryInterface
 {
@@ -27,10 +24,10 @@ class DeleteQueryBuilder extends BaseQueryBuilder implements DeleteQueryInterfac
             $this->getRowIndices(...),
         );
 
-        $update = function(Database $store) use ($indices) {
-            $table = $store->getTableCopy($this->table);
+        $update = function(MockAdapter $adapter) use ($indices) {
+            $table = $adapter->getDatabase()->getTable($this->table);
             $table->deleteRow(...$indices);
-            $store->replaceTable($table);
+            $adapter->save();
         };
 
         return new Query(count($indices), [], $update);

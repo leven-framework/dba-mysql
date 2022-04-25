@@ -2,13 +2,10 @@
 
 namespace Leven\DBA\Mock\Query;
 
-use Leven\DBA\Mock\Query\Filter\ColumnFilterTrait;
-use Leven\DBA\Mock\Query\Filter\LimitFilterTrait;
-use Leven\DBA\Mock\Query\Filter\OrderFilterTrait;
-use Leven\DBA\Mock\Query\Filter\WhereFilterTrait;
 use Leven\DBA\Common\SelectQueryInterface;
-use Leven\DBA\Mock\Query;
 use Leven\DBA\Mock\Structure\Table;
+use Leven\DBA\Mock\Query;
+use Leven\DBA\Mock\Query\Filter\{ColumnFilterTrait, LimitFilterTrait, OrderFilterTrait, WhereFilterTrait};
 
 class SelectQueryBuilder extends BaseQueryBuilder implements SelectQueryInterface
 {
@@ -20,7 +17,7 @@ class SelectQueryBuilder extends BaseQueryBuilder implements SelectQueryInterfac
 
     final protected function formatAssocColumns(Table $table): array
     {
-        foreach($table->getRows() as $index => $row)
+        foreach($table->getRows() as $row)
             $output[] = array_combine($table->getColumnNames(), $row);
 
         return $output ?? [];

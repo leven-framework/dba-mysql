@@ -2,31 +2,23 @@
 
 namespace Leven\DBA\Mock\Structure;
 
-use Closure;
-
 class Database
 {
 
     /** @var Table[] $tables */
     protected array $tables = [];
 
-    public function __construct(
-        array|Closure      $restore = [],
-        protected ?Closure $onUpdate = null,
-    )
+    public static function fromArray(array $array): static
     {
-        if(is_callable($restore)) $restore = $restore();
-        $this->fromArray($restore);
-    }
+        $instance = new static;
 
-
-    protected function fromArray(array $array): void
-    {
         foreach ($array as $tableName => $tableContent)
-            $this->tables[$tableName] = Table::fromArray($tableName, $tableContent);
+            $instance->tables[$tableName] = Table::fromArray($tableName, $tableContent);
+
+        return $instance;
     }
 
-    protected function toArray(): array
+    public function toArray(): array
     {
         foreach ($this->tables as $table)
             $output[$table->name] = $table->toArray();
@@ -35,17 +27,9 @@ class Database
     }
 
 
-    public function getTableCopy(string $tableName): Table
+    public function getTable(string $tableName): Table
     {
-        return clone $this->tables[$tableName];
-    }
-
-    public function replaceTable(Table $table): void
-    {
-        $this->tables[$table->name] = $table;
-
-        if(is_callable($this->onUpdate))
-            ($this->onUpdate)($this->toArray());
+        return $this->tables[$tableName];
     }
 
 }
