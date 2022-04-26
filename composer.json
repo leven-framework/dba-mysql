@@ -2,14 +2,12 @@
   "name": "leven-framework/dba-mysql",
   "type": "library",
   "require": {
-    "ext-pdo": "*",
-    "symfony/expression-language": "^6.0"
+    "leven-framework/dba-common": "^1.0",
+    "ext-pdo": "*"
   },
   "autoload": {
     "psr-4": {
-      "Leven\\DBA\\MySQL\\": "src/",
-      "Leven\\DBA\\Mock\\": "mock/",
-      "Leven\\DBA\\Common\\": "common/"
+      "Leven\\DBA\\MySQL\\": "src/"
     }
   }
 }
