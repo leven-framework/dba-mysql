@@ -4,6 +4,7 @@ namespace Leven\DBA\Common\BuilderPart;
 
 class WhereGroup
 {
+
     use WhereTrait;
 
     public function __construct(
@@ -16,6 +17,5 @@ class WhereGroup
     {
         return $this->conditions;
     }
-
 
 }

@@ -2,8 +2,8 @@
 
 namespace Leven\DBA\Common;
 
-use Leven\DBA\Common\Exception\Driver\DriverException;
-use Leven\DBA\Common\Exception\Driver\TxnNotActiveException;
+use Leven\DBA\Common\Exception\DriverException;
+use Leven\DBA\Common\Exception\TxnNotActiveException;
 
 interface AdapterInterface
 {
@@ -11,7 +11,7 @@ interface AdapterInterface
     public function select(string $table): SelectQueryInterface;
 
     /**
-     * @throws DriverException
+     * @throws \Leven\DBA\Common\Exception\DriverException
      */
     public function insert(string $table, ?array $data = null): InsertQueryInterface|AdapterResponse;
 
@@ -20,18 +20,18 @@ interface AdapterInterface
     public function delete(string $table): DeleteQueryInterface;
 
     /**
-     * @throws DriverException
+     * @throws \Leven\DBA\Common\Exception\DriverException
      */
     public function txnBegin(): static;
 
     /**
-     * @throws TxnNotActiveException
+     * @throws \Leven\DBA\Common\Exception\TxnNotActiveException
      * @throws DriverException
      */
     public function txnCommit(): static;
 
     /**
-     * @throws TxnNotActiveException
+     * @throws \Leven\DBA\Common\Exception\TxnNotActiveException
      * @throws DriverException
      */
     public function txnRollback(): static;

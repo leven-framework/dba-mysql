@@ -2,8 +2,9 @@
 
 namespace Leven\DBA\MySQL\Query;
 
-use Leven\DBA\Common\Exception\Driver\DriverException;
+use BadMethodCallException;
 use Leven\DBA\Common\AdapterResponse;
+use Leven\DBA\Common\Exception\DriverException;
 use Leven\DBA\MySQL\MySQLAdapter;
 use Leven\DBA\MySQL\Query;
 
@@ -11,7 +12,7 @@ abstract class BaseQueryBuilder
 {
 
     public function __construct(
-        protected readonly string $table,
+        protected readonly string        $table,
         protected readonly ?MySQLAdapter $adapter = null,
     )
     {
@@ -24,8 +25,10 @@ abstract class BaseQueryBuilder
      */
     final public function execute(): AdapterResponse
     {
-        if($this->adapter === null)
-            throw new \Exception('pass the built query to the adapter executeQuery() method');
+        if($this->adapter === null){
+            $msg = 'pass the built query to adapters executeQuery() method OR initialize the builder through the adapter';
+            throw new BadMethodCallException($msg);
+        }
 
         return $this->adapter->executeQuery($this->getQuery());
     }
@@ -39,7 +42,7 @@ abstract class BaseQueryBuilder
 
     final protected function genQueryTable(): Query
     {
-        return new Query(static::escapeName($this->table));
+        return new Query(static::escapeName($this->adapter->tablePrefix . $this->table));
     }
 
 }

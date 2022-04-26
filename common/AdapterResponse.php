@@ -7,7 +7,7 @@ class AdapterResponse implements IteratorAggregate {
     public function __construct(
         public readonly int $count,
         public readonly array $rows = [],
-        public readonly int|string|null $lastID = null,
+        public readonly int|string|null $lastId = null,
     )
     {
     }

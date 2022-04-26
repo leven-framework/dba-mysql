@@ -2,42 +2,33 @@
 
 namespace Leven\DBA\Mock\Structure;
 
-use Exception;
+use Leven\DBA\Common\Exception\DriverException;
 
 class Table
 {
 
-    /** @var Column[] $columns */
-    protected array $columns;
+    protected bool $hasAutoIncrementColumn = false;
 
-    protected array $rows;
+    /** @var Column[] $columns */
+    protected array $columns = [];
+
+    protected array $rows = [];
 
 
     public function __construct(
         public readonly string $name,
+        protected ?int         $autoIncrement = null,
     )
     {
     }
 
-    public static function fromArray(string $key, array $value): self
+
+    // GETTERS
+
+    public function getAutoIncrement(): ?int
     {
-        $table = new self($key);
-
-        $table->columnsFromArray($value[0]);
-
-        foreach ($value as $index => $row)
-            if ($index !== 0) // skip column definitions
-                $table->addRow($row);
-
-        return $table;
+        return $this->autoIncrement;
     }
-
-    protected function columnsFromArray(array $array): void
-    {
-        foreach ($array as $columnName => $columnProps)
-            $this->columns[$columnName] = Column::fromArray($columnName, $columnProps);
-    }
-
 
     public function getColumns(): array
     {
@@ -46,12 +37,15 @@ class Table
 
     public function getColumnNames(): array
     {
-        return array_keys($this->columns);
+        return array_keys($this->getColumns());
     }
 
     public function getColumnIndex(string $columnName): int
     {
-        return array_search($columnName, $this->getColumnNames());
+        if (($key = array_search($columnName, $this->getColumnNames())) === false)
+            throw new DriverException("column `$columnName` does not exist in table `$this->name`");
+
+        return $key;
     }
 
     public function getRows(): array
@@ -60,9 +54,39 @@ class Table
     }
 
 
+    // ARRAY CONVERTERS
+
+    public static function fromArray(string $key, array $value): self
+    {
+        $table = new static(
+            name: $key,
+            autoIncrement: $value['autoIncrement'] ?? null,
+        );
+
+        $table->columnsFromArray($value[0]);
+
+        foreach ($value as $index => $row)
+            if ($index !== 0 && $index !== 'autoIncrement')
+                $table->addRow($row, true);
+
+        return $table;
+    }
+
+    protected function columnsFromArray(array $array): void
+    {
+        foreach ($array as $columnName => $columnProps)
+            // allow to pass column object directly as value
+            $this->addColumn(($columnProps instanceof Column) ? $columnProps
+                : Column::fromArray($columnName, $columnProps));
+    }
+
     public function toArray(): array
     {
-        return [ $this->columnsToArray(), ...$this->getRows() ];
+        return [
+            'autoIncrement' => $this->autoIncrement,
+            $this->columnsToArray(),
+            ...$this->getRows()
+        ];
     }
 
     protected function columnsToArray(): array
@@ -74,32 +98,82 @@ class Table
     }
 
 
+    // MANIPULATION METHODS
+
     public function addColumn(Column $column): void
     {
-        $this->columns[] = $column;
-    }
+        if($column->autoIncrement) {
+            if($this->hasAutoIncrementColumn)
+                throw new DriverException("table `$this->name` cannot have more than one autoIncrement column");
 
-    public function addRow(array $row): void
-    {
-        foreach($row as $index => $field) {
-            $column = $this->getColumnNames()[$index];
-            if (!$this->columns[$column]->validateValue($field))
-                throw new Exception("value is not valid for column '$column'");
+            $this->hasAutoIncrementColumn = true;
+
+            // if it's not null that means it has been configured from table array
+            if($this->autoIncrement === null) $this->autoIncrement = 0;
         }
 
-        $this->rows[] = $row;
+        $this->columns[$column->name] = $column;
     }
 
-    public function mergeRow(int $index, array $row): void
+    protected function validateRow(array $row, ?int $skipUniqueCheckForRowIndex = null): void
     {
-        $this->rows[$index] = $row + $this->rows[$index];
+        foreach($row as $fieldIndex => $field) {
+            $columnName = $this->getColumnNames()[$fieldIndex];
+            $column = $this->columns[$columnName];
 
-        // + messes up the order and the array becomes associative for some reason
-        ksort($this->rows[$index]);
+            $column->validateValue($field);
+
+            if($column->unique) $uniqueChecks[$fieldIndex] = $field;
+        }
+
+        if (empty($uniqueChecks)) return; // do we need to perform are any unique checks
+
+        foreach ($this->getRows() as $checkingRowIndex => $checkingRow)
+            if($checkingRowIndex !== $skipUniqueCheckForRowIndex) // skip current row if same value is being set again
+                foreach ($uniqueChecks as $fieldIndex => $field)
+                    if ($checkingRow[$fieldIndex] === $field)
+                        throw new DriverException("attempted to add non unique value in table `$this->name`");
     }
 
+    protected function getDefaultRow(bool $noAutoIncrement = false): array
+    {
+        foreach($this->getColumns() as $column)
+            $output[] = $column->autoIncrement && !$noAutoIncrement
+                ? ++$this->autoIncrement
+                : $column->default
+            ;
 
-    // filter helpers
+        return $output ?? [];
+    }
+
+    /**
+     * @param bool $noAutoIncrement if true, autoIncrement value for table will not be incremented,
+     *                              used when converting table from array
+     *
+     * @return int|null autoIncrement value of the added row or null of there is no autoIncrement column
+     */
+    public function addRow(array $row, bool $noAutoIncrement = false): ?int
+    {
+        $row += $this->getDefaultRow($noAutoIncrement);
+        ksort($row); // array + merging messes up the order key order for some reason
+
+        $this->validateRow($row);
+        $this->rows[] = $row;
+
+        return $this->autoIncrement;
+    }
+
+    public function mergeIntoRow(int $index, array $row): void
+    {
+        $this->validateRow($row, $index); // validate only new fields
+        // second param is to skip unique check if existing unique values are being overwritten with same values
+
+        $row += $this->rows[$index];
+        ksort($row); // array + merging messes up the order key order for some reason
+
+        $this->rows[$index] = $row;
+    }
+
 
     public function deleteColumn(string ...$columnNames): void
     {

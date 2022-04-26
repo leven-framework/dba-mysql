@@ -10,12 +10,10 @@ trait SetFilterTrait
 
     use SetTrait;
 
-    protected function transformDataToRow(Table $table, bool $allowMissingColumns = false): array
+    protected function formatSetDataToRow(Table $table): array
     {
         foreach($this->data as $column => $value)
             $output[$table->getColumnIndex($column)] = $value;
-
-        // TODO: allowMissingColumns (for update query)
 
         return $output ?? [];
     }

@@ -12,7 +12,7 @@ trait SetGeneratorTrait
 
     protected function genQuerySet(): Query
     {
-        if(empty($this->data)) throw new \Exception('no set data');
+        if(empty($this->data)) return new Query;
 
         $query = new Query(' SET ');
         $index = 0;

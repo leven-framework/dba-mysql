@@ -7,6 +7,7 @@ use Leven\DBA\MySQL\Query;
 
 trait LimitGeneratorTrait
 {
+
     use LimitTrait;
 
     protected function genQueryLimit(): Query
@@ -17,4 +18,5 @@ trait LimitGeneratorTrait
         if($this->offset > 0) $query->append(" OFFSET $this->offset");
         return $query;
     }
+
 }

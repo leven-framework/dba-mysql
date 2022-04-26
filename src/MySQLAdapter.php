@@ -1,10 +1,10 @@
-<?php namespace Leven\DBA\MySQL;
-// by Leon, MIT License
+<?php
+
+namespace Leven\DBA\MySQL;
 
 use Leven\DBA\Common\AdapterInterface;
 use Leven\DBA\Common\AdapterResponse;
-use Leven\DBA\Common\Exception\{Driver\DriverException, Driver\TxnNotActiveException};
-
+use Leven\DBA\Common\Exception\{DriverException, TxnNotActiveException};
 use Leven\DBA\MySQL\Query\{
     DeleteQueryBuilder,
     DescribeQueryBuilder,
@@ -12,7 +12,6 @@ use Leven\DBA\MySQL\Query\{
     SelectQueryBuilder,
     UpdateQueryBuilder
 };
-
 use PDO, PDOException;
 
 class MySQLAdapter implements AdapterInterface
@@ -31,28 +30,29 @@ class MySQLAdapter implements AdapterInterface
         string     $host = '127.0.0.1',
         int        $port = 3306,
         string     $charset = 'UTF8',
-        protected  readonly string $prefix = '',
+        public     readonly string $tablePrefix = '',
     )
     {
-        if($database instanceof PDO){
+        if ($database instanceof PDO) {
             $this->driver = $database;
             return;
         }
 
-        try {
-            $this->driver = new PDO(
-                dsn: "mysql:host=$host;" .
-                    "port=$port;" .
-                    "dbname=$database;" .
-                    "charset=$charset",
-                username: $user,
-                password: $password,
-                options: [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                ]
-            );
-        } catch (PDOException $e) {
+        $args = [
+            "dsn" => "mysql:host=$host;" .
+                "port=$port;" .
+                "dbname=$database;" .
+                "charset=$charset",
+            "username" => $user,
+            "password" => $password,
+            "options" => [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]
+        ];
+
+        try { $this->driver = new PDO(...$args); }
+        catch (PDOException $e) {
             throw new DriverException(message: 'PDO init failed', previous: $e);
         }
     }
@@ -65,8 +65,7 @@ class MySQLAdapter implements AdapterInterface
         try {
             $stat = $this->driver->prepare($query->getQuery());
             $stat->execute($query->getParams());
-        }
-        catch (PDOException $e) {
+        } catch (PDOException $e) {
             throw new DriverException(message: 'query failed', previous: $e);
         }
 
@@ -82,12 +81,18 @@ class MySQLAdapter implements AdapterInterface
 
     public function describe(string $table): DescribeQueryBuilder
     {
-        return new DescribeQueryBuilder($this->prefix . $table, $this);
+        return new DescribeQueryBuilder($table, $this);
     }
 
     public function select(string $table): SelectQueryBuilder
     {
-        return new SelectQueryBuilder($this->prefix . $table, $this);
+        return new SelectQueryBuilder($table, $this);
+    }
+
+    // alias for select
+    public function get(string $table): SelectQueryBuilder
+    {
+        return $this->select($table);
     }
 
     /**
@@ -95,9 +100,9 @@ class MySQLAdapter implements AdapterInterface
      */
     public function insert(string $table, ?array $data = null): InsertQueryBuilder|AdapterResponse
     {
-        $builder = new InsertQueryBuilder($this->prefix . $table, $this);
+        $builder = new InsertQueryBuilder($table, $this);
 
-        if($data === null) return $builder;
+        if ($data === null) return $builder;
 
         $builder->set($data);
         return $builder->execute();
@@ -105,26 +110,28 @@ class MySQLAdapter implements AdapterInterface
 
     public function update(string $table): UpdateQueryBuilder
     {
-        return new UpdateQueryBuilder($this->prefix . $table, $this);
+        return new UpdateQueryBuilder($table, $this);
     }
 
     public function delete(string $table): DeleteQueryBuilder
     {
-        return new DeleteQueryBuilder($this->prefix . $table, $this);
+        return new DeleteQueryBuilder($table, $this);
     }
 
 
     // TRANSACTIONS
 
     /**
-     * @throws DriverException
+     * @throws \Leven\DBA\Common\Exception\DriverException
      */
     public function txnBegin(): static
     {
-        if ($this->txnDepth++ > 0) return $this;
+        if ($this->txnDepth++ !== 0) return $this;
 
         try { $this->driver->beginTransaction(); }
-        catch (PDOException $e) { throw new DriverException(message: 'txn failed', previous: $e); }
+        catch (PDOException $e) {
+            throw new DriverException(message: 'txn failed', previous: $e);
+        }
 
         return $this;
     }
@@ -135,10 +142,12 @@ class MySQLAdapter implements AdapterInterface
      */
     public function txnCommit(): static
     {
-        if (!$this->txnDepth) throw new TxnNotActiveException;
+        if ($this->txnDepth === 0) throw new TxnNotActiveException;
 
-        try { if ($this->txnDepth-- === 1) $this->driver->commit(); }
-        catch (PDOException $e) { throw new DriverException(message: 'txn failed', previous: $e); }
+        try { if (--$this->txnDepth === 0) $this->driver->commit(); }
+        catch (PDOException $e) {
+            throw new DriverException(message: 'txn failed', previous: $e);
+        }
 
         return $this;
     }
@@ -149,10 +158,13 @@ class MySQLAdapter implements AdapterInterface
      */
     public function txnRollback(): static
     {
-        if (!$this->txnDepth) throw new TxnNotActiveException;
+        if ($this->txnDepth === 0) throw new TxnNotActiveException;
 
-        try { $this->driver->rollBack(); $this->txnDepth = 0; }
-        catch (PDOException $e) { throw new DriverException(message: 'txn failed', previous: $e); }
+        $this->txnDepth = 0;
+        try { $this->driver->rollBack(); }
+        catch (PDOException $e) {
+            throw new DriverException(message: 'txn failed', previous: $e);
+        }
 
         return $this;
     }

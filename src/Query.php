@@ -75,7 +75,7 @@ class Query
 
     // HELPER
 
-    // used because of a bug in PDO where false is not casted to int
+    // used because of a bug in PDO prepared statements where false is not casted to int
     protected static function makeBoolInt($value)
     {
         return (is_bool($value) ? (int) $value : $value);

@@ -11,6 +11,7 @@ class Query
         public readonly int $count,
         public readonly array $rows,
         public readonly ?Closure $update = null,
+        public readonly ?string $autoIncrementFromTable = null,
     )
     {
     }

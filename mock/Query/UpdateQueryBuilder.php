@@ -28,8 +28,8 @@ class UpdateQueryBuilder extends BaseQueryBuilder implements UpdateQueryInterfac
         $update = function(MockAdapter $adapter) use ($indices) {
             $table = $adapter->getDatabase()->getTable($this->table);
 
-            $row = $this->transformDataToRow($table, true);
-            foreach($indices as $index) $table->mergeRow($index, $row);
+            $row = $this->formatSetDataToRow($table);
+            foreach($indices as $index) $table->mergeIntoRow($index, $row);
 
             $adapter->save();
         };

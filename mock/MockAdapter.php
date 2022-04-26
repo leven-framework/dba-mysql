@@ -1,14 +1,12 @@
-<?php namespace Leven\DBA\Mock;
-// by Leon, MIT License
+<?php
+
+namespace Leven\DBA\Mock;
 
 use Closure;
 use Leven\DBA\Common\AdapterInterface;
 use Leven\DBA\Common\AdapterResponse;
-use Leven\DBA\Common\Exception\Driver\TxnNotActiveException;
-use Leven\DBA\Mock\Query\DeleteQueryBuilder;
-use Leven\DBA\Mock\Query\InsertQueryBuilder;
-use Leven\DBA\Mock\Query\SelectQueryBuilder;
-use Leven\DBA\Mock\Query\UpdateQueryBuilder;
+use Leven\DBA\Common\Exception\TxnNotActiveException;
+use Leven\DBA\Mock\Query\{DeleteQueryBuilder, InsertQueryBuilder, SelectQueryBuilder, UpdateQueryBuilder};
 use Leven\DBA\Mock\Structure\Database;
 
 class MockAdapter implements AdapterInterface
@@ -17,18 +15,19 @@ class MockAdapter implements AdapterInterface
     protected Database $database;
 
     protected int $txnDepth = 0;
-    protected array $txnDbRollback;
+    protected string $txnRollbackDb;
 
     public function __construct(
-        array|Closure      $restore = [],
-        protected ?Closure $onUpdate = null,
+        Database|Closure|array      $database = [],
+        protected readonly ?Closure $onUpdate = null,
 
-        protected string   $prefix = '',
+        public readonly string      $tablePrefix = '',
     )
     {
-        if(is_callable($restore)) $restore = $restore();
+        if(is_callable($database)) $database = $database();
 
-        $this->database = Database::fromArray($restore);
+        $this->database = $database instanceof Database ? $database
+            : Database::fromArray($database);
     }
 
     public function getDatabase(): Database
@@ -40,13 +39,16 @@ class MockAdapter implements AdapterInterface
     {
         if(is_callable($query->update)) ($query->update)($this);
 
-        return new AdapterResponse($query->count, $query->rows);
+        if(($table = $query->autoIncrementFromTable) !== null)
+            $lastId = $this->getDatabase()->getTable($table)->getAutoIncrement();
+
+        return new AdapterResponse($query->count, $query->rows, $lastId ?? null);
     }
 
     public function save()
     {
         if(is_callable($this->onUpdate) && $this->txnDepth === 0)
-            ($this->onUpdate)($this->database->toArray());
+            ($this->onUpdate)($this->database);
     }
 
 
@@ -54,12 +56,18 @@ class MockAdapter implements AdapterInterface
 
     public function select(string $table): SelectQueryBuilder
     {
-        return new SelectQueryBuilder($this, $this->prefix . $table);
+        return new SelectQueryBuilder($this, $table);
+    }
+
+    // alias for select
+    public function get(string $table): SelectQueryBuilder
+    {
+        return $this->select($table);
     }
 
     public function insert(string $table, ?array $data = null): InsertQueryBuilder|AdapterResponse
     {
-        $builder = new InsertQueryBuilder($this, $this->prefix . $table);
+        $builder = new InsertQueryBuilder($this, $table);
 
         if($data === null) return $builder;
 
@@ -69,12 +77,12 @@ class MockAdapter implements AdapterInterface
 
     public function update(string $table): UpdateQueryBuilder
     {
-        return new UpdateQueryBuilder($this, $this->prefix . $table);
+        return new UpdateQueryBuilder($this, $table);
     }
 
     public function delete(string $table): DeleteQueryBuilder
     {
-        return new DeleteQueryBuilder($this, $this->prefix . $table);
+        return new DeleteQueryBuilder($this, $table);
     }
 
 
@@ -83,7 +91,7 @@ class MockAdapter implements AdapterInterface
     public function txnBegin(): static
     {
         if($this->txnDepth++ === 0)
-            $this->txnDbRollback = $this->database->toArray();
+            $this->txnRollbackDb = serialize($this->database);
 
         return $this;
     }
@@ -93,7 +101,7 @@ class MockAdapter implements AdapterInterface
         if($this->txnDepth === 0) throw new TxnNotActiveException;
         if(--$this->txnDepth > 0) return $this; // still in txn
 
-        unset($this->txnDbRollback);
+        unset($this->txnRollbackDb);
         $this->save();
 
         return $this;
@@ -104,7 +112,8 @@ class MockAdapter implements AdapterInterface
         if($this->txnDepth === 0) throw new TxnNotActiveException;
 
         $this->txnDepth = 0;
-        $this->database = Database::fromArray($this->txnDbRollback);
+        $this->database = unserialize($this->txnRollbackDb);
+        unset($this->txnRollbackDb);
 
         return $this;
     }

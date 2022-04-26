@@ -7,6 +7,7 @@ use Leven\DBA\MySQL\Query;
 
 trait OrderGeneratorTrait
 {
+
     use OrderTrait;
 
     protected function genQueryOrder(): Query

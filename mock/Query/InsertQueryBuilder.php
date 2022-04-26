@@ -16,11 +16,14 @@ class InsertQueryBuilder extends BaseQueryBuilder implements InsertQueryInterfac
     {
         $update = function(MockAdapter $adapter) {
             $table = $adapter->getDatabase()->getTable($this->table);
-            $table->addRow($this->transformDataToRow($table));
+
+            $row = $this->formatSetDataToRow($table);
+            $table->addRow($row);
+
             $adapter->save();
         };
 
-        return new Query(1, [], $update);
+        return new Query(1, [], $update, $this->adapter->tablePrefix . $this->table);
     }
 
 }

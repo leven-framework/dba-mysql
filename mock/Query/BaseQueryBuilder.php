@@ -10,8 +10,9 @@ use Leven\DBA\Mock\Structure\Table;
 abstract class BaseQueryBuilder
 {
 
+    // parameter order is reverse compared to MySQL adapter because here adapter is required
     public function __construct(
-        public MockAdapter $database,
+        public MockAdapter $adapter,
         public string      $table,
     )
     {
@@ -21,18 +22,22 @@ abstract class BaseQueryBuilder
 
     final public function execute(): AdapterResponse
     {
-        return $this->database->executeQuery($this->getQuery());
-    }
-
-
-    final protected function getTableCopy(): Table
-    {
-        return clone $this->database->getDatabase()->getTable($this->table);
+        return $this->adapter->executeQuery($this->getQuery());
     }
 
     final protected function pipe(mixed $initialValue, callable ...$callables): mixed
     {
         return array_reduce($callables, fn($carry, $item) => $item($carry), $initialValue);
+    }
+
+
+    final protected function getTableCopy(): Table
+    {
+        $table = $this->adapter->tablePrefix . $this->table;
+
+        // shallow copy is enough because we're only going to be modifying table rows (array)
+        // if I ever implement column aliases, we will need to deep copy
+        return clone $this->adapter->getDatabase()->getTable($table);
     }
 
     final protected function getRowIndices(Table $table): array
