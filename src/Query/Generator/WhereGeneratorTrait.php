@@ -16,15 +16,15 @@ trait WhereGeneratorTrait
         if(empty($conditions)) return $query;
 
         foreach ($conditions as $index => $condition) {
-            if($index !== 0) $query->append($condition->isOr ? ' OR ' : ' AND ');
+            if(!$query->empty()) $query->append($condition->isOr ? ' OR ' : ' AND ');
 
             if($condition instanceof WhereGroup) {
                 $query->merge(static::genQueryWhereRecursive($condition->getConditions()));
             } else
-                if($condition instanceof WhereCondition) {
-                    $query->append(static::escapeName($condition->column) . ' ' . $condition->operand . ' ?');
-                    $query->addParams($condition->value);
-                }
+            if($condition instanceof WhereCondition) {
+                $query->append(static::escapeName($condition->column) . ' ' . $condition->operand . ' ?');
+                $query->addParams($condition->value);
+            }
         }
 
         return $query->wrap('(', ')');
