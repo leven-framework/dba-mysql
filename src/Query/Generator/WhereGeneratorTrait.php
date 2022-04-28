@@ -15,7 +15,7 @@ trait WhereGeneratorTrait
         $query = new Query;
         if(empty($conditions)) return $query;
 
-        foreach ($conditions as $index => $condition) {
+        foreach ($conditions as $condition) {
             if(!$query->empty()) $query->append($condition->isOr ? ' OR ' : ' AND ');
 
             if($condition instanceof WhereGroup) {
@@ -27,15 +27,13 @@ trait WhereGeneratorTrait
             }
         }
 
-        return $query->wrap('(', ')');
+        return $query->empty() ? $query : $query->wrap('(', ')');
     }
 
     protected function genQueryWhere(): Query
     {
-        $conds = static::genQueryWhereRecursive($this->conditions);
-        if($conds->empty()) return new Query;
-        $conds->prepend(' WHERE ');
-        return $conds;
+        $query = static::genQueryWhereRecursive($this->conditions);
+        return $query->empty() ? $query : $query->prepend(' WHERE ');
     }
 
 }
