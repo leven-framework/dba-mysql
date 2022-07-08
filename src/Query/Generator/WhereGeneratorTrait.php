@@ -22,6 +22,13 @@ trait WhereGeneratorTrait
                 $query->merge(static::genQueryWhereRecursive($condition->getConditions()));
             } else
             if($condition instanceof WhereCondition) {
+                if(is_array($condition->value)){
+                    $ph = implode(',', array_fill(0, count($condition->value), '?'));
+                    $query->append(static::escapeName($condition->column) . ' ' . $condition->operand . " ($ph)");
+                    $query->addParams(...$condition->value);
+                    continue;
+                }
+
                 $query->append(static::escapeName($condition->column) . ' ' . $condition->operand . ' ?');
                 $query->addParams($condition->value);
             }
